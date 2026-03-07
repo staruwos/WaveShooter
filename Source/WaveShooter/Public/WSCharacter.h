@@ -29,11 +29,31 @@ public:
 
 protected:
 
+	/* Components */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	/* Other Properties */
+
+	/* Aiming */
+	// Is the player currently holding the aim button?
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	bool bIsAiming;
+
+	// Normal Field of View
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	float DefaultFOV;
+
+	// Zoomed-in Field of View
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	float AimFOV;
+
+	// How fast the camera transitions between default and aim FOV
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	float ZoomInterpSpeed;
 
 	/* Input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -45,7 +65,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	// Aim Input Action (Button)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* AimAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+
+	// Aiming functions
+	void StartAiming();
+	void StopAiming();
 
 };

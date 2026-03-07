@@ -37,6 +37,12 @@ AWSCharacter::AWSCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	// Initialize aiming variables
+	bIsAiming = false;
+	DefaultFOV = 90.0f;
+	AimFOV = 60.0f;
+	ZoomInterpSpeed = 20.0f;
 }
 
 // Called when the game starts or when spawned
@@ -60,6 +66,15 @@ void AWSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Determine what our FOV should be right now
+	float TargetFOV = bIsAiming ? AimFOV : DefaultFOV;
+
+	// Smoothly interpolate from our current FOV to our Target FOV
+	float CurrentFOV = FollowCamera->FieldOfView;
+	float NewFOV = FMath::FInterpTo(CurrentFOV, TargetFOV, DeltaTime, ZoomInterpSpeed);
+
+	FollowCamera->SetFieldOfView(NewFOV);
+
 }
 
 void AWSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -72,6 +87,11 @@ void AWSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AWSCharacter::Look);
+
+		// Aiming
+		// "Started" fires when you press the button down. "Completed" fires when you let go.
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AWSCharacter::StartAiming);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AWSCharacter::StopAiming);
 	}
 }
 
@@ -107,4 +127,25 @@ void AWSCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AWSCharacter::StartAiming()
+{
+	bIsAiming = true;
+	// Tell the character to face the same way the camera/controller is facing
+	bUseControllerRotationYaw = true;
+
+	// Stop the character from rotating to face the direction they are walking
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
+void AWSCharacter::StopAiming()
+{
+	bIsAiming = false;
+
+	// Stop forcing the character to face the camera
+	bUseControllerRotationYaw = false;
+
+	// Let the character go back to freely rotating towards their movement direction
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
