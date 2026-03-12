@@ -133,7 +133,7 @@ void AWSCharacter::StartAiming()
 {
 	bIsAiming = true;
 	// Tell the character to face the same way the camera/controller is facing
-	//bUseControllerRotationYaw = true;
+	bUseControllerRotationYaw = true;
 
 	// Stop the character from rotating to face the direction they are walking
 	GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -144,7 +144,7 @@ void AWSCharacter::StopAiming()
 	bIsAiming = false;
 
 	// Stop forcing the character to face the camera
-	//bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = false;
 
 	// Let the character go back to freely rotating towards their movement direction
 	GetCharacterMovement()->bOrientRotationToMovement = true;
